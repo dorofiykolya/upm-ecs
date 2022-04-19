@@ -1,0 +1,18 @@
+{
+  "name": "dorofiykolya.ecs",
+  "displayName": "ECS",
+  "version": "1.0.0",
+  "unity": "2019.4",
+  "author": "https://github.com/dorofiykolya",
+  "description": "ECS Entity Component System",
+  "keywords": [
+    "ecs",
+    "entity",
+    "component",
+    "system"
+  ],
+  "dependencies": {},
+  "samples": [
+  ],
+  "category": "Unity"
+}
