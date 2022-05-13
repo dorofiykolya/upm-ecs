@@ -5,67 +5,88 @@ namespace ECS.Entities
 {
     public struct EntityFilter<T> where T : struct, IComponent
     {
+        public delegate void ForEachAction(
+            EntityId entityId,
+            ref T component
+        );
+
         public T[] Components;
 
         private readonly TypeDescriptor _typeDescriptor;
         private readonly SubWorld.EntityFilter _entityFilter;
-        private readonly WorldPool _statePool;
+        private readonly WorldPool _pool;
 
         public EntityFilter(TypeDescriptor typeDescriptor, SubWorld.EntityFilter entityFilter,
-            WorldPool statePool)
+            WorldPool pool)
         {
             _typeDescriptor = typeDescriptor;
             _entityFilter = entityFilter;
-            _statePool = statePool;
+            _pool = pool;
             Components = (T[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[0]].GetComponents();
         }
 
-        public void ForEach(Action<EntityId, T> action)
+        public void ForEach(ForEachAction action)
         {
-            var entities = _statePool.PopEntityIds(this);
+            object? context = null;
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = this;
+#endif
+            var entities = _pool.PopEntityIds(context);
             Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
 
             foreach (var entityId in entities)
             {
-                action(entityId, Components[entityId.Index]);
+                action(entityId, ref Components[entityId.Index]);
             }
 
-            _statePool.Return(entities);
+            _pool.Return(entities);
         }
     }
 
     public struct EntityFilter<T0, T1> where T0 : struct, IComponent where T1 : struct, IComponent
     {
+        public delegate void ForEachAction(
+            EntityId entityId,
+            ref T0 component0,
+            ref T1 component1
+        );
+
         public T0[] Components0;
         public T1[] Components1;
 
         private readonly TypeDescriptor _typeDescriptor;
         private readonly SubWorld.EntityFilter _entityFilter;
-        private readonly WorldPool _statePool;
+        private readonly WorldPool _pool;
 
         public EntityFilter(TypeDescriptor typeDescriptor, SubWorld.EntityFilter entityFilter,
-            WorldPool statePool) : this()
+            WorldPool pool) : this()
         {
             _typeDescriptor = typeDescriptor;
             _entityFilter = entityFilter;
-            _statePool = statePool;
+            _pool = pool;
 
             Components0 = (T0[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[0]].GetComponents();
             Components1 = (T1[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[1]].GetComponents();
         }
 
-        public void ForEach(Action<EntityId, T0, T1> action)
+        public void ForEach(ForEachAction action)
         {
-            var entities = _statePool.PopEntityIds(this);
+            object? context = null;
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = this;
+#endif
+            var entities = _pool.PopEntityIds(context);
             Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
 
             foreach (var entityId in entities)
             {
                 var index = entityId.Index;
-                action(entityId, Components0[index], Components1[index]);
+                action(entityId, ref Components0[index], ref Components1[index]);
             }
 
-            _statePool.Return(entities);
+            _pool.Return(entities);
         }
     }
 
@@ -73,38 +94,50 @@ namespace ECS.Entities
         where T1 : struct, IComponent
         where T2 : struct, IComponent
     {
+        public delegate void ForEachAction(
+            EntityId entityId,
+            ref T0 component0,
+            ref T1 component1,
+            ref T2 component2
+        );
+
         public T0[] Components0;
         public T1[] Components1;
         public T2[] Components2;
 
         private readonly TypeDescriptor _typeDescriptor;
         private readonly SubWorld.EntityFilter _entityFilter;
-        private readonly WorldPool _statePool;
+        private readonly WorldPool _pool;
 
         public EntityFilter(TypeDescriptor typeDescriptor, SubWorld.EntityFilter entityFilter,
-            WorldPool statePool) : this()
+            WorldPool pool) : this()
         {
             _typeDescriptor = typeDescriptor;
             _entityFilter = entityFilter;
-            _statePool = statePool;
+            _pool = pool;
 
             Components0 = (T0[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[0]].GetComponents();
             Components1 = (T1[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[1]].GetComponents();
             Components2 = (T2[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[2]].GetComponents();
         }
 
-        public void ForEach(Action<EntityId, T0, T1, T2> action)
+        public void ForEach(ForEachAction action)
         {
-            var entities = _statePool.PopEntityIds(this);
+            object? context = null;
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = this;
+#endif
+            var entities = _pool.PopEntityIds(context);
             Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
 
             foreach (var entityId in entities)
             {
                 var index = entityId.Index;
-                action(entityId, Components0[index], Components1[index], Components2[index]);
+                action(entityId, ref Components0[index], ref Components1[index], ref Components2[index]);
             }
 
-            _statePool.Return(entities);
+            _pool.Return(entities);
         }
     }
 
@@ -113,6 +146,14 @@ namespace ECS.Entities
         where T2 : struct, IComponent
         where T3 : struct, IComponent
     {
+        public delegate void ForEachAction(
+            EntityId entityId,
+            ref T0 component0,
+            ref T1 component1,
+            ref T2 component2,
+            ref T3 component3
+        );
+
         public T0[] Components0;
         public T1[] Components1;
         public T2[] Components2;
@@ -120,14 +161,14 @@ namespace ECS.Entities
 
         private readonly TypeDescriptor _typeDescriptor;
         private readonly SubWorld.EntityFilter _entityFilter;
-        private readonly WorldPool _statePool;
+        private readonly WorldPool _pool;
 
         public EntityFilter(TypeDescriptor typeDescriptor, SubWorld.EntityFilter entityFilter,
-            WorldPool statePool) : this()
+            WorldPool pool) : this()
         {
             _typeDescriptor = typeDescriptor;
             _entityFilter = entityFilter;
-            _statePool = statePool;
+            _pool = pool;
 
             Components0 = (T0[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[0]].GetComponents();
             Components1 = (T1[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[1]].GetComponents();
@@ -135,18 +176,24 @@ namespace ECS.Entities
             Components3 = (T3[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[3]].GetComponents();
         }
 
-        public void ForEach(Action<EntityId, T0, T1, T2, T3> action)
+        public void ForEach(ForEachAction action)
         {
-            var entities = _statePool.PopEntityIds(this);
+            object? context = null;
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = this;
+#endif
+            var entities = _pool.PopEntityIds(context);
             Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
 
             foreach (var entityId in entities)
             {
                 var index = entityId.Index;
-                action(entityId, Components0[index], Components1[index], Components2[index], Components3[index]);
+                action(entityId, ref Components0[index], ref Components1[index], ref Components2[index],
+                    ref Components3[index]);
             }
 
-            _statePool.Return(entities);
+            _pool.Return(entities);
         }
     }
 
@@ -156,6 +203,15 @@ namespace ECS.Entities
         where T3 : struct, IComponent
         where T4 : struct, IComponent
     {
+        public delegate void ForEachAction(
+            EntityId entityId,
+            ref T0 component0,
+            ref T1 component1,
+            ref T2 component2,
+            ref T3 component3,
+            ref T4 component4
+        );
+
         public T0[] Components0;
         public T1[] Components1;
         public T2[] Components2;
@@ -164,14 +220,14 @@ namespace ECS.Entities
 
         private readonly TypeDescriptor _typeDescriptor;
         private readonly SubWorld.EntityFilter _entityFilter;
-        private readonly WorldPool _statePool;
+        private readonly WorldPool _pool;
 
         public EntityFilter(TypeDescriptor typeDescriptor, SubWorld.EntityFilter entityFilter,
-            WorldPool statePool) : this()
+            WorldPool pool) : this()
         {
             _typeDescriptor = typeDescriptor;
             _entityFilter = entityFilter;
-            _statePool = statePool;
+            _pool = pool;
 
             Components0 = (T0[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[0]].GetComponents();
             Components1 = (T1[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[1]].GetComponents();
@@ -180,19 +236,25 @@ namespace ECS.Entities
             Components4 = (T4[])_entityFilter.Tables[_typeDescriptor.IncludeTypes[4]].GetComponents();
         }
 
-        public void ForEach(Action<EntityId, T0, T1, T2, T3, T4> action)
+        public void ForEach(ForEachAction action)
         {
-            var entities = _statePool.PopEntityIds(this);
+            object? context = null;
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = this;
+#endif
+            var entities = _pool.PopEntityIds(context);
             Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
 
             foreach (var entityId in entities)
             {
                 var index = entityId.Index;
-                action(entityId, Components0[index], Components1[index], Components2[index], Components3[index],
-                    Components4[index]);
+                action(entityId, ref Components0[index], ref Components1[index], ref Components2[index],
+                    ref Components3[index],
+                    ref Components4[index]);
             }
 
-            _statePool.Return(entities);
+            _pool.Return(entities);
         }
     }
 }

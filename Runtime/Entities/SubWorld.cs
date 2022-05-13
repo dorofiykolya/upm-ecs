@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ECS.Components;
@@ -16,15 +13,16 @@ namespace ECS.Entities
         private readonly Dictionary<Type, int> _typeIndex;
         private readonly EntitiesMap _entities;
         private readonly SharedComponentTable _sharedComponentTable;
-        private ITableRawData[] _tablesList;
+        private ITableRawData?[] _tablesList;
         private int _typeTableIndex = 0;
         private short _entityIndex;
 
-        public World State { get; }
+        // ReSharper disable once MemberCanBePrivate.Global
+        public World World { get; }
 
-        protected SubWorld(World state)
+        protected SubWorld(World world)
         {
-            State = state;
+            World = world;
             _entityIndex = 0;
             _tablesList = new ITableRawData[8];
             _descriptorCache = new Dictionary<Type, TypeDescriptor>();
@@ -38,7 +36,7 @@ namespace ECS.Entities
 
         public bool Contains(EntityId entityId) => _entities.Contains(entityId);
 
-        protected ITable<TComponent> RegisterTable<TComponent>(TableHook<TComponent> hook = null)
+        protected ITable<TComponent> RegisterTable<TComponent>(TableHook<TComponent>? hook = null)
             where TComponent : struct, IComponent
         {
             var table = new TableListImpl<TComponent>(this, _typeTableIndex, _entities, hook);
@@ -60,7 +58,7 @@ namespace ECS.Entities
 
         public bool HasComponent<TComponent>(EntityId entityId) where TComponent : struct, IComponent
         {
-            ITable table = _tablesList[GetTypeIndex(typeof(TComponent))];
+            ITable table = _tablesList[GetTypeIndex(typeof(TComponent))]!;
             return table.Contains(entityId);
         }
 
@@ -79,7 +77,7 @@ namespace ECS.Entities
         public bool GetComponent<TComponent>(EntityId entityId, out TComponent component)
             where TComponent : struct, IComponent
         {
-            ITable table = _tablesList[GetTypeIndex(typeof(TComponent))];
+            ITable table = _tablesList[GetTypeIndex(typeof(TComponent))]!;
             if (table.Contains(entityId))
             {
                 component = ((ITable<TComponent>)table)[entityId];
@@ -93,13 +91,13 @@ namespace ECS.Entities
         public void SetComponent<TComponent>(EntityId entityId, TComponent component)
             where TComponent : struct, IComponent
         {
-            var table = (ITable<TComponent>)_tablesList[_typeIndex[typeof(TComponent)]];
+            var table = (ITable<TComponent>)_tablesList[_typeIndex[typeof(TComponent)]]!;
             table.Set(entityId, component);
         }
 
         public void DeleteComponent<TComponent>(EntityId entityId) where TComponent : struct, IComponent
         {
-            var table = (ITable<TComponent>)_tablesList[_typeIndex[typeof(TComponent)]];
+            var table = (ITable<TComponent>)_tablesList[_typeIndex[typeof(TComponent)]]!;
             table.Delete(entityId);
         }
 
@@ -109,7 +107,7 @@ namespace ECS.Entities
             var rawTable = _tablesList[index];
             var result = new UnsafeDirectComponent<T>
             {
-                Components = (T[])rawTable.GetComponents(),
+                Components = (T[])rawTable!.GetComponents(),
                 Contains = rawTable.GetContains(),
                 Ids = _entities.EntityIds,
                 Count = rawTable.Count
@@ -123,7 +121,7 @@ namespace ECS.Entities
             var rawTable = _tablesList[index];
             var result = new UnsafeDirectComponent<T>
             {
-                Components = (T[])rawTable.GetComponents(),
+                Components = (T[])rawTable!.GetComponents(),
                 Contains = rawTable.GetContains(),
                 Ids = _entities.EntityIds,
                 Count = rawTable.Count
@@ -139,16 +137,16 @@ namespace ECS.Entities
         {
             return new EntityFilter<T>(GetTypeDescriptor(typeof(EntityFilter<T>)), new EntityFilter
             {
-                Manager = this
-            }, State.StatePool);
+                SubWorld = this
+            }, World.Pool);
         }
 
         public EntityFilter<T0, T1> WhenAll<T0, T1>() where T0 : struct, IComponent where T1 : struct, IComponent
         {
             return new EntityFilter<T0, T1>(GetTypeDescriptor(typeof(EntityFilter<T0, T1>)), new EntityFilter
             {
-                Manager = this
-            }, State.StatePool);
+                SubWorld = this
+            }, World.Pool);
         }
 
         public EntityFilter<T0, T1, T2> WhenAll<T0, T1, T2>() where T0 : struct, IComponent
@@ -157,8 +155,8 @@ namespace ECS.Entities
         {
             return new EntityFilter<T0, T1, T2>(GetTypeDescriptor(typeof(EntityFilter<T0, T1, T2>)), new EntityFilter
             {
-                Manager = this
-            }, State.StatePool);
+                SubWorld = this
+            }, World.Pool);
         }
 
         public EntityFilter<T0, T1, T2, T3> WhenAll<T0, T1, T2, T3>() where T0 : struct, IComponent
@@ -169,8 +167,8 @@ namespace ECS.Entities
             return new EntityFilter<T0, T1, T2, T3>(GetTypeDescriptor(typeof(EntityFilter<T0, T1, T2, T3>)),
                 new EntityFilter
                 {
-                    Manager = this
-                }, State.StatePool);
+                    SubWorld = this
+                }, World.Pool);
         }
 
         public EntityFilter<T0, T1, T2, T3, T4> WhenAll<T0, T1, T2, T3, T4>() where T0 : struct, IComponent
@@ -182,8 +180,8 @@ namespace ECS.Entities
             return new EntityFilter<T0, T1, T2, T3, T4>(GetTypeDescriptor(typeof(EntityFilter<T0, T1, T2, T3, T4>)),
                 new EntityFilter
                 {
-                    Manager = this
-                }, State.StatePool);
+                    SubWorld = this
+                }, World.Pool);
         }
 
         public Matcher<TComponent> CreateMatcher<TComponent>() where TComponent : class, new()
@@ -193,24 +191,27 @@ namespace ECS.Entities
             var filter = new TComponent();
             var matcher = new Matcher<TComponent>(filter, typeDescriptor, new EntityFilter
             {
-                Manager = this
+                SubWorld = this
             });
             return matcher;
         }
 
         public EntitiesMap.EntityIdEnumerator GetEnumerator() => _entities.GetEntitiesId();
 
+        // ReSharper disable once HeapView.BoxingAllocation
         IEnumerator<EntityId> IEnumerable<EntityId>.GetEnumerator() => _entities.GetEntities();
 
+        // ReSharper disable once HeapView.BoxingAllocation
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private TypeDescriptor GetTypeDescriptor(Type type)
         {
-            TypeDescriptor typeDescriptor;
+            // ReSharper disable once InlineOutVariableDeclaration
+            TypeDescriptor? typeDescriptor;
             if (!_descriptorCache.TryGetValue(type, out typeDescriptor))
             {
                 var descriptorList = new List<FieldDescriptor>();
-                var includeList = State.StatePool.PopIntHashSet();
+                var includeList = World.Pool.PopIntHashSet();
                 var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetField |
                                             BindingFlags.SetField);
                 foreach (var field in fields)
@@ -237,7 +238,7 @@ namespace ECS.Entities
                     }
                 }
 
-                var excludeList = State.StatePool.PopIntHashSet();
+                var excludeList = World.Pool.PopIntHashSet();
                 var attributes = type.GetCustomAttributes(false);
                 if (attributes.Length != 0)
                 {
@@ -258,8 +259,8 @@ namespace ECS.Entities
                     ExcludeTypes = excludeList.ToArray()
                 };
 
-                State.StatePool.Return(includeList);
-                State.StatePool.Return(excludeList);
+                World.Pool.Return(includeList);
+                World.Pool.Return(excludeList);
             }
 
             return typeDescriptor;
@@ -327,17 +328,20 @@ namespace ECS.Entities
         public class EntitiesMap
         {
 #if DEBUG
-            private readonly object _owner;
+            private readonly object? _owner;
 #endif
             private const int DefaultSize = Constants.StartEntitiesCapacity;
 
+            // ReSharper disable once MemberCanBePrivate.Global
             public int EntitiesCount;
             public int LastIndex;
+            // ReSharper disable once HeapView.ObjectAllocation.Evident
             public EntityId[] EntityIds = new EntityId[DefaultSize];
+            // ReSharper disable once HeapView.ObjectAllocation.Evident
             public bool[] HasEntities = new bool[DefaultSize];
             public int Version;
 
-            public EntitiesMap(object owner)
+            public EntitiesMap(object? owner)
             {
 #if DEBUG
                 _owner = owner;
@@ -347,7 +351,7 @@ namespace ECS.Entities
             public int Count
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get { return EntitiesCount; }
+                get => EntitiesCount;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -373,7 +377,7 @@ namespace ECS.Entities
                 if (id.Id == 0) throw new ArgumentException("Entity id is not correct: " + id);
                 if (id.Index >= EntityIds.Length) throw new ArgumentException("Entity is not found: " + id);
 
-                int index = -1;
+                int index;
 
                 unsafe
                 {
@@ -417,17 +421,17 @@ namespace ECS.Entities
                 ++Version;
             }
 
-            public IEnumerator<EntityId> GetEnumerator() => new Enumerator(this);
+            public Enumerator GetEnumerator() => new Enumerator(this);
 
-            public IEnumerator<EntityId> GetEntities() => new Enumerator(this);
+            public Enumerator GetEntities() => new Enumerator(this);
 
             public EntityIdEnumerator GetEntitiesId() => new EntityIdEnumerator(this);
 
             public struct EntityIdEnumerator : IEnumerator<EntityId>
             {
-                private EntitiesMap _entities;
+                private readonly EntitiesMap _entities;
+                private readonly int _version;
                 private int _index;
-                private int _version;
                 private int _count;
 
                 public EntityIdEnumerator(EntitiesMap entities)
@@ -467,16 +471,19 @@ namespace ECS.Entities
                     }
                 }
 
+                // ReSharper disable once HeapView.BoxingAllocation
                 object IEnumerator.Current => Current;
 
-                public void Dispose() => _entities = null;
+                public void Dispose()
+                {
+                }
             }
 
-            private struct Enumerator : IEnumerator<EntityId>
+            public struct Enumerator : IEnumerator<EntityId>
             {
-                private EntitiesMap _entities;
+                private readonly EntitiesMap _entities;
+                private readonly int _version;
                 private int _index;
-                private int _version;
                 private int _count;
 
                 public Enumerator(EntitiesMap entities)
@@ -516,32 +523,35 @@ namespace ECS.Entities
                     }
                 }
 
+                // ReSharper disable once HeapView.BoxingAllocation
                 object IEnumerator.Current => Current;
 
-                public void Dispose() => _entities = null;
+                public void Dispose()
+                {
+                }
             }
         }
 
         public struct EntityFilter
         {
-            public SubWorld Manager;
+            public SubWorld SubWorld;
 
-            public bool[] HasEntities => Manager._entities.HasEntities;
+            public bool[] HasEntities => SubWorld._entities.HasEntities;
 
-            public EntityId[] Entities => Manager._entities.EntityIds;
+            public EntityId[] Entities => SubWorld._entities.EntityIds;
 
-            public int EntitiesCount => Manager._entities.Count;
+            public int EntitiesCount => SubWorld._entities.Count;
 
-            public int EntityLastIndex => Manager._entities.LastIndex;
+            public int EntityLastIndex => SubWorld._entities.LastIndex;
 
-            public ITableRawData[] Tables => Manager._tablesList;
+            public ITableRawData[] Tables => SubWorld._tablesList!;
 
-            public int GetTypeIndex<T>() where T : struct, IComponent => Manager.GetTypeIndex<T>();
+            public int GetTypeIndex<T>() where T : struct, IComponent => SubWorld.GetTypeIndex<T>();
         }
 
         private class TableListImpl<T> : TableList<T> where T : struct, IComponent
         {
-            public TableListImpl(SubWorld subWorld, int typeIndex, EntitiesMap entitiesMap, TableHook<T> hook) : base(
+            public TableListImpl(SubWorld subWorld, int typeIndex, EntitiesMap entitiesMap, TableHook<T>? hook) : base(
                 subWorld, typeIndex, entitiesMap, hook)
             {
             }

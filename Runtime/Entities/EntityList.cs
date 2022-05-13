@@ -6,7 +6,7 @@ namespace ECS.Entities
 {
     public class EntityList : RawList<EntityId>
     {
-        public object Context;
+        public object? Context;
 
         public EntityList() : base()
         {

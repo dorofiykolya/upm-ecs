@@ -5,7 +5,7 @@ using ECS.Entities;
 
 namespace ECS
 {
-    public class World : SubWorld.WorldBase
+    public abstract class World : SubWorld.WorldBase
     {
         private struct WorldWrapper
         {
@@ -13,23 +13,23 @@ namespace ECS
             public SubWorld SubWorld;
         }
 
-        private readonly WorldPool _statePool;
+        private readonly WorldPool _pool;
         private readonly Dictionary<Type, WorldWrapper> _map;
         private readonly SubWorld[] _subWorlds;
         private readonly SharedComponentTable _sharedComponentTable;
         private int _id;
 
-        public World()
+        protected World()
         {
             _map = new Dictionary<Type, WorldWrapper>();
             _subWorlds = new SubWorld[Constants.EntitySubWorldCapacity];
-            _statePool = new WorldPool();
+            _pool = new WorldPool();
             _sharedComponentTable = new SharedComponentTable();
         }
 
         public SharedComponentTable Shared => _sharedComponentTable;
 
-        public WorldPool StatePool => _statePool;
+        public WorldPool Pool => _pool;
 
         public EntityId CreateEntity<T>() where T : SubWorld
         {

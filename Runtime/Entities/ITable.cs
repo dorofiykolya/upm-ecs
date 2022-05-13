@@ -28,6 +28,12 @@ namespace ECS.Entities
             get;
         }
 
+        int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
         void GetEntities(EntityList entities);
     }
 

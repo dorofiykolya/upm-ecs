@@ -12,21 +12,28 @@ namespace ECS.Entities
         private const int StartSize = Constants.StartEntitiesCapacity;
         private T[] _components = new T[StartSize];
         private bool[] _contains = new bool[StartSize];
+        private int _capacity = StartSize;
         private int _count;
         private int _version;
         private int _startIndex;
         private readonly int _typeIndex;
         private readonly SubWorld _subWorld;
-        private readonly TableHook<T> _hook;
+        private readonly TableHook<T>? _hook;
         private readonly SubWorld.EntitiesMap _entitiesMap;
 
-        protected TableList(SubWorld subWorld, int typeIndex, SubWorld.EntitiesMap entitiesMap, TableHook<T> hook)
+        protected TableList(SubWorld subWorld, int typeIndex, SubWorld.EntitiesMap entitiesMap, TableHook<T>? hook)
         {
             _subWorld = subWorld;
             _typeIndex = typeIndex;
             _entitiesMap = entitiesMap;
             _hook = hook;
             _startIndex = int.MaxValue;
+        }
+        
+        public int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _capacity;
         }
 
         public int TypeIndex
@@ -143,7 +150,7 @@ namespace ECS.Entities
             {
                 int index = entityId.Index;
 
-                string errorMessage = null;
+                string? errorMessage = null;
 #if !ENABLE_PROFILER && DEBUG
                 errorMessage = $"EntityId not found id:{entityId}, in:{_subWorld}";
 #endif
@@ -160,7 +167,7 @@ namespace ECS.Entities
 
             if (_contains[entityId.Index])
             {
-                string errorMessage = null;
+                string? errorMessage = null;
 #if !ENABLE_PROFILER && DEBUG
                 errorMessage = $"EntityId not found id:{entityId}, in:{_subWorld}";
 #endif
@@ -218,14 +225,16 @@ namespace ECS.Entities
 
         public void ResizeTo(int newCapacity)
         {
-            if (_components.Length < newCapacity)
+            if (_capacity < newCapacity)
             {
+                _capacity = newCapacity;
                 Array.Resize(ref _components, newCapacity);
                 Array.Resize(ref _contains, newCapacity);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // ReSharper disable once HeapView.BoxingAllocation
         public IComponent GetComponent(int index) => _components[index];
 
         private int GetNextSize(int v)

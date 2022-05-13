@@ -45,7 +45,7 @@ namespace ECS
 #endif
         }
 
-        public EntityList PopEntityIds(object context, int capacity = Constants.DefaultEntityListPoolCapacity)
+        public EntityList PopEntityIds(object? context = null, int capacity = Constants.DefaultEntityListPoolCapacity)
         {
             EntityList result;
             if (_entities.Count != 0)
