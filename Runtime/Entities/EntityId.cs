@@ -17,6 +17,8 @@ namespace ECS.Entities
             return ((long)value.SubWorldId << (32 + 16)) | ((long)value.Index << 32) | (long)value.Id;
         }
 
+        public static implicit operator short(EntityId value) => value.Index;
+
         public static explicit operator EntityId(long value)
         {
             int id = (int)((0xFFFFFFFF) & value);
@@ -25,29 +27,11 @@ namespace ECS.Entities
             return new EntityId(id, index, subWorldId);
         }
 
-        public int Id
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private set;
-        }
+        public readonly int Id;
 
-        public short Index
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private set;
-        }
+        public readonly short Index;
 
-        public short SubWorldId
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private set;
-        }
+        public readonly short SubWorldId;
 
         public EntityId(int id, short index, short subWorldId)
         {
@@ -58,10 +42,7 @@ namespace ECS.Entities
 
         public bool Equals(EntityId other) => Id == other.Id;
 
-        public int CompareTo(EntityId other)
-        {
-            return Id.CompareTo(other.Id);
-        }
+        public int CompareTo(EntityId other) => Id.CompareTo(other.Id);
 
         public override bool Equals(object obj)
         {
@@ -82,7 +63,9 @@ namespace ECS.Entities
             }
         }
 
-        public object Clone() => new EntityId(Id, Index, SubWorldId);
+        // ReSharper disable once HeapView.BoxingAllocation
+        object ICloneable.Clone() => new EntityId(Id, Index, SubWorldId);
+        public EntityId Clone() => this;
 
         public override string ToString()
         {

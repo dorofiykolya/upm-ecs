@@ -184,12 +184,12 @@ namespace ECS.Entities
                 }, World.Pool);
         }
 
-        public Matcher<TComponent> CreateMatcher<TComponent>() where TComponent : class, new()
+        public Matcher<TFilter> CreateMatcher<TFilter>() where TFilter : class, new()
         {
-            TypeDescriptor typeDescriptor = GetTypeDescriptor(typeof(TComponent));
+            TypeDescriptor typeDescriptor = GetTypeDescriptor(typeof(TFilter));
 
-            var filter = new TComponent();
-            var matcher = new Matcher<TComponent>(filter, typeDescriptor, new EntityFilter
+            var filter = new TFilter();
+            var matcher = new Matcher<TFilter>(filter, typeDescriptor, new EntityFilter
             {
                 SubWorld = this
             });
@@ -546,7 +546,7 @@ namespace ECS.Entities
 
             public ITableRawData[] Tables => SubWorld._tablesList!;
 
-            public int GetTypeIndex<T>() where T : struct, IComponent => SubWorld.GetTypeIndex<T>();
+            public readonly int GetTypeIndex<T>() where T : struct, IComponent => SubWorld.GetTypeIndex<T>();
         }
 
         private class TableListImpl<T> : TableList<T> where T : struct, IComponent
