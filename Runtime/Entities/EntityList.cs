@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using ECS.Utilities;
+﻿using ECS.Utilities;
 
 namespace ECS.Entities
 {
-    public class EntityList : RawList<EntityId>
+    public abstract class EntityList : RawList<EntityId>
     {
+        private readonly WorldPool _pool;
         public object? Context;
 
-        public EntityList() : base()
+        protected EntityList(WorldPool pool, int capacity) : base(capacity)
         {
+            _pool = pool;
         }
 
-        public EntityList(int capacity) : base(capacity)
-        {
-        }
-
-        public EntityList(IEnumerable<EntityId> collection) : base(collection)
-        {
-        }
+        public void Return() => _pool.Return(this);
 
         public override string ToString()
         {
@@ -30,16 +24,16 @@ namespace ECS.Entities
     public class RawList<T> : IList<T>, System.Collections.IList
     {
         private const int MaxArrayLength = 0X7FEFFFFF;
-        private const int _defaultCapacity = 4;
-        private static readonly T[] _emptyArray = new T[0];
+        private const int DefaultCapacity = 4;
+        private static readonly T[] EmptyArray = Array.Empty<T>();
 
-        public T[] Items;
+        public T?[] Items;
         private int _size;
         private int _version;
 
         public RawList()
         {
-            Items = _emptyArray;
+            Items = EmptyArray;
         }
 
         public RawList(int capacity)
@@ -49,37 +43,37 @@ namespace ECS.Entities
                     ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
 
             if (capacity == 0)
-                Items = _emptyArray;
+                Items = EmptyArray;
             else
                 Items = new T[capacity];
         }
 
-        public RawList(IEnumerable<T> collection)
+        public RawList(IEnumerable<T>? collection)
         {
             if (collection == null)
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.collection);
 
-            ICollection<T> c = collection as ICollection<T>;
+            ICollection<T> c = (collection as ICollection<T>)!;
             if (c != null)
             {
                 int count = c.Count;
                 if (count == 0)
                 {
-                    Items = _emptyArray;
+                    Items = EmptyArray;
                 }
                 else
                 {
                     Items = new T[count];
-                    c.CopyTo(Items, 0);
+                    c.CopyTo(Items!, 0);
                     _size = count;
                 }
             }
             else
             {
                 _size = 0;
-                Items = _emptyArray;
+                Items = EmptyArray;
 
-                using (IEnumerator<T> en = collection.GetEnumerator())
+                using (IEnumerator<T> en = collection!.GetEnumerator())
                 {
                     while (en.MoveNext())
                     {
@@ -114,7 +108,7 @@ namespace ECS.Entities
                     }
                     else
                     {
-                        Items = _emptyArray;
+                        Items = EmptyArray;
                     }
                 }
             }
@@ -154,14 +148,14 @@ namespace ECS.Entities
             }
         }
 
-        private static bool IsCompatibleObject(object value)
+        private static bool IsCompatibleObject(object? value)
         {
             return ((value is T) || (value == null && default(T) == null));
         }
 
-        Object System.Collections.IList.this[int index]
+        object? System.Collections.IList.this[int index]
         {
-            get { return this[index]; }
+            get => this[index];
             set
             {
                 ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(value, ExceptionArgument.value);
@@ -255,7 +249,11 @@ namespace ECS.Entities
 
         void System.Collections.ICollection.CopyTo(Array array, int arrayIndex)
         {
-            if ((array != null) && (array.Rank != 1))
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+            if (array.Rank != 1)
             {
                 ThrowHelper.ThrowArgumentException(ExceptionResource.Arg_RankMultiDimNotSupported);
             }
@@ -289,7 +287,7 @@ namespace ECS.Entities
         {
             if (Items.Length < min)
             {
-                int newCapacity = Items.Length == 0 ? _defaultCapacity : Items.Length * 2;
+                int newCapacity = Items.Length == 0 ? DefaultCapacity : Items.Length * 2;
 
                 if ((uint)newCapacity > MaxArrayLength) newCapacity = MaxArrayLength;
                 if (newCapacity < min) newCapacity = min;
@@ -301,7 +299,7 @@ namespace ECS.Entities
         {
             if (match == null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
+                throw new ArgumentNullException(nameof(match));
             }
 
             for (int i = 0; i < _size; i++)
@@ -358,7 +356,7 @@ namespace ECS.Entities
             return Array.IndexOf(Items, item, 0, _size);
         }
 
-        int System.Collections.IList.IndexOf(Object item)
+        int System.Collections.IList.IndexOf(object? item)
         {
             if (IsCompatibleObject(item))
             {
@@ -571,7 +569,7 @@ namespace ECS.Entities
                 Array.Copy(Items, index + 1, Items, index, _size - index);
             }
 
-            Items[_size] = default(T);
+            Items[_size] = default;
             _version++;
         }
 
@@ -590,7 +588,7 @@ namespace ECS.Entities
             private RawList<T> list;
             private int index;
             private int version;
-            private T current;
+            private T? current;
 
             internal Enumerator(RawList<T> list)
             {
@@ -653,7 +651,7 @@ namespace ECS.Entities
                 }
 
                 index = 0;
-                current = default(T);
+                current = default;
             }
         }
     }

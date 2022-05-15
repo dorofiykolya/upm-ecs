@@ -119,6 +119,16 @@ namespace ECS.Entities
             return _filter;
         }
 
+        public (TFilter, EntityList) GetEntities(object? context = null)
+        {
+            var entities = _entityFilter.SubWorld.World.Pool.PopEntityIds(context);
+            
+            Matcher.Fill(_filter, _typeDescriptor, _entityFilter);
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter, _filters);
+
+            return (_filter, entities);
+        }
+
         public TFilter GetEntities(EntityList result)
         {
             Matcher.Fill(_filter, _typeDescriptor, _entityFilter);

@@ -19,7 +19,7 @@ namespace ECS.Utilities
             ThrowArgumentOutOfRangeException(ExceptionArgument.index, ExceptionResource.ArgumentOutOfRange_Index);
         }
 
-        public static void IfNullAndNullsAreIllegalThenThrow<T>(object value, ExceptionArgument argName)
+        public static void IfNullAndNullsAreIllegalThenThrow<T>(object? value, ExceptionArgument argName)
         {
             if (value == null && !(default(T) == null))
                 ThrowHelper.ThrowArgumentNullException(argName);

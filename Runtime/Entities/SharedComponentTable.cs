@@ -104,6 +104,24 @@ namespace ECS.Entities
             return component;
         }
 
+        public ref T GetComponentRef<T>() where T : struct, IComponent
+        {
+            var index = GetComponentIndex<T>();
+            Contract.True(index != -1);
+
+            if (!_contains[index])
+            {
+                throw new InvalidOperationException($"type: {typeof(T)} did not register");
+            }
+
+            var offset = _offsets[index];
+            fixed (byte* iterator = _buffer)
+            {
+                void* pointer = iterator + offset;
+                return ref Unsafe.AsRef<T>(pointer);
+            }
+        }
+
         public UnsafePointer GetUnsafeComponent<T>() where T : struct, IComponent
         {
             var index = GetComponentIndex<T>();
@@ -149,7 +167,10 @@ namespace ECS.Entities
             for (var i = 0; i < _count; i++)
             {
                 Type componentType = _componentTypes[i];
-                if (componentType == typeof(T)) return i;
+                if (componentType == typeof(T))
+                {
+                    return i;
+                }
             }
 
             return -1;

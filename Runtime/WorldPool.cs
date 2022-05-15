@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using ECS.Entities;
 using ECS.Utilities;
 
@@ -8,11 +6,11 @@ namespace ECS
 {
     public class WorldPool
     {
-        private readonly HashSet<EntityList> _entityRefs = new HashSet<EntityList>();
-        private readonly Stack<EntityList> _entities = new Stack<EntityList>();
-        private readonly Dictionary<Type, Stack<IList>> _listPool = new Dictionary<Type, Stack<IList>>();
-        private readonly Dictionary<Type, Stack<IList>> _rawListPool = new Dictionary<Type, Stack<IList>>();
-        private readonly Stack<HashSet<int>> _intHashSet = new Stack<HashSet<int>>();
+        private readonly HashSet<EntityList> _entityRefs = new();
+        private readonly Stack<EntityList> _entities = new();
+        private readonly Dictionary<Type, Stack<IList>> _listPool = new();
+        private readonly Dictionary<Type, Stack<IList>> _rawListPool = new();
+        private readonly Stack<HashSet<int>> _intHashSet = new();
 
         public HashSet<int> PopIntHashSet()
         {
@@ -37,7 +35,11 @@ namespace ECS
 
         public void Return(EntityList list)
         {
-            if (_entities.Contains(list)) ThrowHelper.ThrowValueExistException();
+            if (_entities.Contains(list))
+            {
+                ThrowHelper.ThrowValueExistException();
+            }
+
             list.Clear();
             _entities.Push(list);
 #if DEBUG
@@ -54,7 +56,7 @@ namespace ECS
             }
             else
             {
-                result = new EntityList(capacity);
+                result = new EntityListImpl(this, capacity);
 #if DEBUG
                 if (_entityRefs.Count >= 20)
                 {
@@ -73,7 +75,7 @@ namespace ECS
 
         public List<T> PopList<T>(int capacity = 0)
         {
-            Stack<IList> stack;
+            Stack<IList>? stack;
             if (_listPool.TryGetValue(typeof(T), out stack) && stack.Count != 0)
             {
                 var result = ((List<T>)stack.Pop());
@@ -91,7 +93,7 @@ namespace ECS
         public void PushList<T>(List<T> value)
         {
             value.Clear();
-            Stack<IList> stack;
+            Stack<IList>? stack;
             if (!_listPool.TryGetValue(typeof(T), out stack))
             {
                 _listPool[typeof(T)] = stack = new Stack<IList>();
@@ -103,7 +105,7 @@ namespace ECS
 
         public RawList<T> PopRawList<T>(int capacity)
         {
-            Stack<IList> stack;
+            Stack<IList>? stack;
             if (_rawListPool.TryGetValue(typeof(T), out stack) && stack.Count != 0)
             {
                 var result = ((RawList<T>)stack.Pop());
@@ -121,7 +123,7 @@ namespace ECS
         public void PusRawList<T>(RawList<T> value)
         {
             value.Clear();
-            Stack<IList> stack;
+            Stack<IList>? stack;
             if (!_rawListPool.TryGetValue(typeof(T), out stack))
             {
                 _rawListPool[typeof(T)] = stack = new Stack<IList>();
@@ -129,6 +131,13 @@ namespace ECS
 
             if (stack.Contains(value)) ThrowHelper.ThrowValueExistException();
             stack.Push(value);
+        }
+
+        private class EntityListImpl : EntityList
+        {
+            public EntityListImpl(WorldPool pool, int capacity) : base(pool, capacity)
+            {
+            }
         }
     }
 }

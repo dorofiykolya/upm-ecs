@@ -91,6 +91,16 @@ namespace ECS.Utilities
       return System.Runtime.CompilerServices.Unsafe.Read<T>(source);
 #endif
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref T AsRef<T>(void* source) where T : struct
+        {
+#if UNITY_2020_3_OR_NEWER
+            return ref Unity.Collections.LowLevel.Unsafe.UnsafeUtility.AsRef<T>(source);
+#else
+            return ref System.Runtime.CompilerServices.Unsafe.AsRef<T>(source);
+#endif
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SizeOf<T>() where T : struct
