@@ -29,7 +29,7 @@ namespace ECS.Entities
             _hook = hook;
             _startIndex = int.MaxValue;
         }
-        
+
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -159,6 +159,21 @@ namespace ECS.Entities
                 return _components[index];
             }
             set { Set(entityId, value); }
+        }
+
+        public ref T this[short index] => ref _components[index];
+
+        public ref T GetRef(EntityId entityId)
+        {
+            int index = entityId.Index;
+
+            string? errorMessage = null;
+#if !ENABLE_PROFILER && DEBUG
+            errorMessage = $"EntityId not found id:{entityId}, in:{_subWorld}";
+#endif
+            Contract.True(_entitiesMap.EntityIds[index].FullEquals(entityId), errorMessage);
+
+            return ref _components[index];
         }
 
         public bool TryGet(EntityId entityId, out T component)

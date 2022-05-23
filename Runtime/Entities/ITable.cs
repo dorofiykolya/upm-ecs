@@ -40,6 +40,8 @@ namespace ECS.Entities
     public interface ITable<T> : ITable, IEnumerable<ComponentIndex<T>> where T : struct, IComponent
     {
         T this[EntityId entityId] { get; set; }
+        ref T this[short index] { get; }
+        ref T GetRef(EntityId entityId);
         void Set(EntityId entityId, T component);
         bool TryGet(EntityId entityId, out T component);
 

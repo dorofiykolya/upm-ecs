@@ -42,6 +42,22 @@ namespace ECS.Entities
 
             _pool.Return(entities);
         }
+
+        public EntityList GetEntities(object? context = null)
+        {
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = context ?? this;
+#endif
+            var entities = _pool.PopEntityIds(context);
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
+            return entities;
+        }
+
+        public void GetEntities(EntityList entities)
+        {
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
+        }
     }
 
     public struct EntityFilter<T0, T1> where T0 : struct, IComponent where T1 : struct, IComponent
@@ -87,6 +103,22 @@ namespace ECS.Entities
             }
 
             _pool.Return(entities);
+        }
+
+        public EntityList GetEntities(object? context = null)
+        {
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = context ?? this;
+#endif
+            var entities = _pool.PopEntityIds(context);
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
+            return entities;
+        }
+
+        public void GetEntities(EntityList entities)
+        {
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
         }
     }
 
@@ -138,6 +170,22 @@ namespace ECS.Entities
             }
 
             _pool.Return(entities);
+        }
+
+        public EntityList GetEntities(object? context = null)
+        {
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = context ?? this;
+#endif
+            var entities = _pool.PopEntityIds(context);
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
+            return entities;
+        }
+
+        public void GetEntities(EntityList entities)
+        {
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
         }
     }
 
@@ -194,6 +242,22 @@ namespace ECS.Entities
             }
 
             _pool.Return(entities);
+        }
+
+        public EntityList GetEntities(object? context = null)
+        {
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = context ?? this;
+#endif
+            var entities = _pool.PopEntityIds(context);
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
+            return entities;
+        }
+
+        public void GetEntities(EntityList entities)
+        {
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
         }
     }
 
@@ -255,6 +319,22 @@ namespace ECS.Entities
             }
 
             _pool.Return(entities);
+        }
+
+        public EntityList GetEntities(object? context = null)
+        {
+#if DEBUG
+            // ReSharper disable once HeapView.BoxingAllocation
+            context = context ?? this;
+#endif
+            var entities = _pool.PopEntityIds(context);
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
+            return entities;
+        }
+
+        public void GetEntities(EntityList entities)
+        {
+            Matcher.GetEntities(entities, _typeDescriptor, _entityFilter);
         }
     }
 }
