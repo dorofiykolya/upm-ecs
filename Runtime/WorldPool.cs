@@ -28,25 +28,6 @@ namespace ECS
             _intHashSet.Push(hashSet);
         }
 
-        public void Return<T>(List<T> path)
-        {
-            PushList(path);
-        }
-
-        public void Return(EntityList list)
-        {
-            if (_entities.Contains(list))
-            {
-                ThrowHelper.ThrowValueExistException();
-            }
-
-            list.Clear();
-            _entities.Push(list);
-#if DEBUG
-            _entityRefs.Remove(list);
-#endif
-        }
-
         public EntityList PopEntityIds(object? context = null, int capacity = Constants.DefaultEntityListPoolCapacity)
         {
             EntityList result;
@@ -73,6 +54,20 @@ namespace ECS
             return result;
         }
 
+        public void Return(EntityList list)
+        {
+            if (_entities.Contains(list))
+            {
+                ThrowHelper.ThrowValueExistException();
+            }
+
+            list.Clear();
+            _entities.Push(list);
+#if DEBUG
+            _entityRefs.Remove(list);
+#endif
+        }
+
         public List<T> PopList<T>(int capacity = 0)
         {
             Stack<IList>? stack;
@@ -90,7 +85,7 @@ namespace ECS
             return new List<T>(capacity);
         }
 
-        public void PushList<T>(List<T> value)
+        public void Return<T>(List<T> value)
         {
             value.Clear();
             Stack<IList>? stack;
@@ -120,7 +115,7 @@ namespace ECS
             return new RawList<T>(capacity);
         }
 
-        public void PusRawList<T>(RawList<T> value)
+        public void Return<T>(RawList<T> value)
         {
             value.Clear();
             Stack<IList>? stack;
