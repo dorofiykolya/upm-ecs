@@ -1,4 +1,6 @@
-﻿using ECS.Utilities;
+﻿using System;
+using System.Collections.Generic;
+using ECS.Utilities;
 
 namespace ECS.Entities
 {

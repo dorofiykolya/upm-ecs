@@ -1,4 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ECS.Components;
@@ -328,7 +331,7 @@ namespace ECS.Entities
         public class EntitiesMap
         {
 #if DEBUG
-            private readonly object? _owner;
+            private readonly object? _owner = null;
 #endif
             private const int DefaultSize = Constants.StartEntitiesCapacity;
 
