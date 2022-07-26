@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using ECS.Entities;
 using ECS.Utilities;
 
@@ -43,8 +44,11 @@ namespace ECS
 #if DEBUG
                 if (_entityRefs.Count >= 20)
                 {
+                    var refs = string.Join(Environment.NewLine, _entityRefs.Select(e =>
+                        e.Context?.ToString() ?? "---"
+                    ));
                     throw new InvalidOperationException(
-                        $"MEMORY LEAK: {nameof(WorldPool)}.{nameof(PopEntityIds)}");
+                        $"MEMORY LEAK: {nameof(WorldPool)}.{nameof(PopEntityIds)}{Environment.NewLine}refs:{refs}");
                 }
 #endif
             }
