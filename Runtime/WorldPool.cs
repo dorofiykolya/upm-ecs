@@ -8,7 +8,7 @@ namespace ECS
 {
     public class WorldPool
     {
-        private readonly HashSet<EntityList> _entityRefs = new();
+        private readonly List<EntityList> _entityRefs = new();
         private readonly Stack<EntityList> _entities = new();
         private readonly Dictionary<Type, Stack<IList>> _listPool = new();
         private readonly Dictionary<Type, Stack<IList>> _rawListPool = new();
