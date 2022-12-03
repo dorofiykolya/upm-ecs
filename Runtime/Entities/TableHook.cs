@@ -8,7 +8,7 @@ namespace ECS.Entities
         public abstract void AfterDelete(ref EntityId entity);
 
         public abstract void Replace(ref EntityId id, ref TComponent lastComponent, ref TComponent newComponent);
-        public abstract void AfterReplace(ref EntityId entity, TComponent component);
+        public abstract void AfterReplace(ref EntityId entity, ref TComponent component);
 
         public abstract void BeforeSet(ref EntityId id, ref TComponent component);
         public abstract void AfterSet(ref EntityId entity, ref TComponent component);

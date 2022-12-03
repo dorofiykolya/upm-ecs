@@ -233,7 +233,7 @@ namespace ECS.Entities
                 }
                 else
                 {
-                    _hook.AfterReplace(ref entity, component);
+                    _hook.AfterReplace(ref entity, ref component);
                 }
             }
         }
