@@ -266,7 +266,9 @@ namespace ECS.Entities
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public IEnumerator<ComponentIndex<T>> GetEnumerator() => new Enumerator(this);
+        IEnumerator<ComponentIndex<T>> IEnumerable<ComponentIndex<T>>.GetEnumerator() => GetEnumerator();
+        
+        public Enumerator GetEnumerator() => new Enumerator(this);
 
         public struct Enumerator : IEnumerator<ComponentIndex<T>>
         {

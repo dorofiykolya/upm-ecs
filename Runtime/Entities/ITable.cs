@@ -44,6 +44,7 @@ namespace ECS.Entities
         ref T GetRef(EntityId entityId);
         void Set(EntityId entityId, T component);
         bool TryGet(EntityId entityId, out T component);
+        TableList<T>.Enumerator GetEnumerator();
 
         T[] RawComponents
         {
